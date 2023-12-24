@@ -1,0 +1,59 @@
+# Use the official Apache Airflow image as the base image
+FROM apache/airflow:2.8.0
+
+# Install additional dependencies
+USER root
+
+# Install Java and set JAVA_HOME
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        default-jdk \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+ENV JAVA_HOME=/usr/lib/jvm/default-java
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
+# # Install Hadoop
+RUN curl -O https://archive.apache.org/dist/hadoop/common/hadoop-3.3.1/hadoop-3.3.1.tar.gz \
+    && tar -xzvf hadoop-3.3.1.tar.gz -C /usr/local/ \
+    && rm hadoop-3.3.1.tar.gz
+ENV HADOOP_HOME=/usr/local/hadoop-3.3.1
+ENV HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
+ENV PATH="${HADOOP_HOME}/bin:${PATH}"
+
+
+
+# Install Spark
+RUN curl -O https://archive.apache.org/dist/spark/spark-3.5.0/spark-3.5.0-bin-hadoop3.tgz \
+    && tar -xzvf spark-3.5.0-bin-hadoop3.tgz -C /usr/local/ \
+    && rm spark-3.5.0-bin-hadoop3.tgz
+ENV SPARK_HOME=/usr/local/spark-3.5.0-bin-hadoop3
+ENV PATH="${SPARK_HOME}/bin:${PATH}"
+
+# RUN mkdir -p ${SPARK_HOME}/jars
+
+# Configure Spark with AWS dependencies
+RUN curl -L -o ${SPARK_HOME}/jars/aws-java-sdk-bundle-1.12.625.jar \
+    https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.625/aws-java-sdk-bundle-1.12.625.jar
+
+# Configure Hadoop with AWS dependencies
+RUN curl -L -o ${SPARK_HOME}/jars/hadoop-aws-3.3.1.jar \
+    https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.1/hadoop-aws-3.3.1.jar
+
+# # Copy Hadoop and Java JARS to the Spark lib directory
+# COPY  ${HADOOP_HOME}/share/hadoop/common/lib/* ${SPARK_HOME}/jars/
+# COPY  ${HADOOP_HOME}/share/hadoop/common/* ${SPARK_HOME}/jars/
+# COPY  ${HADOOP_HOME}/share/hadoop/mapreduce/* ${SPARK_HOME}/jars/
+# COPY  ${HADOOP_HOME}/share/hadoop/yarn/* ${SPARK_HOME}/jars/
+# # COPY ${JAVA_HOME}/lib/tools.jar ${SPARK_HOME}/jars/
+
+
+# Switch back to the airflow user
+USER airflow
+
+# Initialize the Airflow database
+RUN airflow db init
+
+# Add any other dependencies from requirements.txt
+COPY /custom_airflow_image/requirements.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
