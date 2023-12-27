@@ -8,24 +8,6 @@ from decouple import config
 import configparser
 import os
 
-# aws_access_key = config('AWS_ACCESS_KEY')
-# aws_secret_key = config('AWS_SECRET_KEY')
-
-# def read_spark_config(file_path):
-#     print(os.getcwd(), os.path.isfile(file_path), file_path)
-#     config = configparser.RawConfigParser()
-#     config.read(file_path)
-    
-#     print("------------------ Config: ", config.sections())
-
-#     aws_access_key = config.get('aws', 'aws.accessKey')
-#     aws_secret_key = config.get('aws', 'aws.secretKey')
-
-#     return aws_access_key, aws_secret_key
-
-
-# config_file_path = '/opt/bitnami/spark/conf/credentials.properties'
-# aws_access_key, aws_secret_key = read_spark_config(config_file_path)
 
 conf = SparkConf()\
         .set("spark.jars.packages", "/usr/local/spark-3.5.0-bin-hadoop3/jars/aws-java-sdk-bundle-1.12.625.jar")\
@@ -34,10 +16,6 @@ conf = SparkConf()\
         .set("com.amazonaws.services.s3.enableV4", True)\
         .set("spark.driver.extraJavaOptions", "-Dcom.amazonaws.services.s3.enableV4=true")\
         .set("spark.hadoop.fs.s3a.path.style.access", True)
-
-# sc = SparkContext(conf=conf)
-
-
 
 # spark = SparkSession \
 #     .builder \

@@ -70,6 +70,7 @@ x-airflow-common:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./tmp:/local_files
+    - ./spark_scripts:/opt/airflow/spark_scripts
     - ./plugins:/opt/airflow/plugins
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:

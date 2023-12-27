@@ -13,7 +13,7 @@ default_args = {
 }
 
 spark_dag = DAG(
-        dag_id = "spark_airflow_dag",
+        dag_id = "spark_api_data_to_s3",
         default_args=default_args,
         schedule_interval=None,	
         dagrun_timeout=timedelta(minutes=60),
@@ -21,9 +21,8 @@ spark_dag = DAG(
         start_date = airflow.utils.dates.days_ago(1)
 )
 
-
 Extract = SparkSubmitOperator(
-		application ='/opt/airflow/dags/spark_etl_script.py',
+		application ='/opt/airflow/spark_scripts/mfi_to_s3.py',
 		conn_id= 'spark_default', 
 		task_id='spark_submit_task',
         conf = {
@@ -33,6 +32,5 @@ Extract = SparkSubmitOperator(
         },
 		dag=spark_dag
 		)
-
 
 Extract

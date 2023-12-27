@@ -23,7 +23,7 @@ ENV PATH="${HADOOP_HOME}/bin:${PATH}"
 #     -P opt/bitnami/sp/jars/
 
 # Copy configuration files
-COPY config/ /opt/bitnami/spark/conf/
+# COPY config/ /opt/bitnami/spark/conf/
 
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
