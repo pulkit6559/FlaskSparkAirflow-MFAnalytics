@@ -5,6 +5,7 @@ from pyspark import SparkContext
 from pyspark.conf import SparkConf
 from pyspark.sql import functions as F
 import os
+import sys
 
 
 def create_spark_context():
@@ -30,7 +31,10 @@ def create_spark_context():
 
 
 def download_api_data(spark, pth="/local_files"):
-    response = requests.get("https://api.mfapi.in/mf/118550")
+    
+    fund_id = sys.argv[1]
+    print("FUND ID: ", fund_id)
+    response = requests.get(f"https://api.mfapi.in/mf/{fund_id}")
     data = response.json()
     json_formatted = json.dumps(data)
 
@@ -43,8 +47,11 @@ def download_api_data(spark, pth="/local_files"):
 
     return raw_json_dataframe
 
+
 def process_data(raw_json_dataframe, out_dir="s3a://iambucketnew/sparkoutputnew", debug=False):
 
+    fund_id = sys.argv[1]
+    
     raw_json_dataframe.printSchema()
     raw_json_dataframe.createOrReplaceTempView("Mutual_benefit")
 
@@ -56,7 +63,8 @@ def process_data(raw_json_dataframe, out_dir="s3a://iambucketnew/sparkoutputnew"
         return dataframe
     
     dataframe.show(10, False)
-    dataframe.write.format('csv').option('header', 'true').save(f'{out_dir}/out', mode='overwrite')
+    # dataframe.write.format('csv').option('header', 'true').save(f'{out_dir}/out', mode='overwrite')
+    dataframe.write.mode("overwrite").parquet(f'{out_dir}/mf_data/{fund_id}/parquet') 
 
 
 if __name__ == "__main__":

@@ -28,9 +28,10 @@ Extract = SparkSubmitOperator(
         conf = {
             'spark.executorEnv.AWS_ACCESS_KEY_ID': os.environ.get('AWS_ACCESS_KEY_ID'),
             'spark.executorEnv.AWS_SECRET_ACCESS_KEY': os.environ.get('AWS_SECRET_ACCESS_KEY'),
-            'spark.executorEnv.AWS_DEFAULT_REGION': os.environ.get('AWS_DEFAULT_REGION')
+            'spark.executorEnv.AWS_DEFAULT_REGION': os.environ.get('AWS_DEFAULT_REGION'),
         },
-		dag=spark_dag
+		dag=spark_dag,
+        application_args=['149023']
 		)
 
 Extract
