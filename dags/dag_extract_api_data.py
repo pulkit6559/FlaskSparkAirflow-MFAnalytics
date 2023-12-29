@@ -31,7 +31,7 @@ Extract = SparkSubmitOperator(
             'spark.executorEnv.AWS_DEFAULT_REGION': os.environ.get('AWS_DEFAULT_REGION'),
         },
 		dag=spark_dag,
-        application_args=['149023']
+        application_args=['{{ dag_run.conf["mf_id"]}}']
 		)
 
 Extract
