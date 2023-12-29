@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Search and DAG</title>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Mutul Funds Dashboard</h2>
+        
+        <form method="post" action="{{ url_for('start_dag') }}" class="mb-4">
+            <div class="form-group">
+                <label for="search_text">Enter the name of Fund you want to search:</label>
+                <input type="text" class="form-control" id="search_text" name="search_text" required>
+                <div class="d-flex justify-content-between">
+                <input type="submit" class="btn btn-primary" name="btn" value="Search Funds">
+                <input type="submit" class="btn btn-success" name="btn" value="Submit Job"  id="submitJobBtn">
+                </div>
+            </div>
+        </form>
+
+        {% if matched_lines %}
+            <h4>Found Funds:</h4>
+            <div class="d-flex align-items-center justify-content-center vertical-align">
+            <ol>
+                {% for idx, line in matched_lines %}
+                <li> SchemeCode: {{ idx }} - {{ line }}</li>
+                {% endfor %}
+            </ol>
+            </div>
+
+        {% endif %}
+
+        <h4>Initializing Funds Database:</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Job Timestamp</th>
+                    <th>Fund Name</th>
+                    <th>Status</th>
+                    <th>Query String</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for job in jobs %}
+                <tr>
+                    <td>{{ job.timestamp }}</td>
+                    <td>{{ job.fund_name + "/" + job.dag_id.split("_")[0] }}</td>
+                    <td>{{ job.status }}</td>
+                    <td>{{ job.query_str }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="d-flex justify-content-between">
+        <a href="{{ url_for('check_job_status') }}" class="btn btn-info">Check Job Status</a>
+        <a href="{{ url_for('delete_jobs') }}" class="btn btn-danger">Delete all jobs</a>
+        </div>
+    </div>
+</body>
+</html>
