@@ -38,12 +38,12 @@ def download_api_data(spark, pth="/local_files"):
     data = response.json()
     json_formatted = json.dumps(data)
 
-    with open(f"{pth}/api_data.json", "w") as data_file:
+    with open(f"{pth}/api_data_{fund_id}.json", "w") as data_file:
         data_file.write(json_formatted)
     
     raw_json_dataframe = spark.read.format("json") \
         .option("inferSchema", "true") \
-        .load(f"{pth}/api_data.json")
+        .load(f"{pth}/api_data_{fund_id}.json")
 
     return raw_json_dataframe
 

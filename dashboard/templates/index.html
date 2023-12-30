@@ -7,6 +7,21 @@
     <title>Search and DAG</title>
 </head>
 <body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{{ url_for('landing_page') }}">Home</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
     <div class="container mt-5">
         <h2>Mutul Funds Dashboard</h2>
         
@@ -54,11 +69,12 @@
                 {% endfor %}
             </tbody>
         </table>
-
-        <div class="d-flex justify-content-between">
+    </div>
+<footer class="container py-5">
+    <div class="d-flex justify-content-between">
         <a href="{{ url_for('check_job_status') }}" class="btn btn-info">Check Job Status</a>
         <a href="{{ url_for('delete_jobs') }}" class="btn btn-danger">Delete all jobs</a>
         </div>
-    </div>
+</footer>
 </body>
 </html>

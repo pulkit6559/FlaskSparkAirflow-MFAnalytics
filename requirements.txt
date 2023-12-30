@@ -1,3 +1,4 @@
 pyspark
 pytest
 requests
+pyarrow

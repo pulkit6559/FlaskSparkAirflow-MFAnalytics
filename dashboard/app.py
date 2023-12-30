@@ -13,6 +13,13 @@ import uuid
 import requests
 import json
 
+import numpy as np
+import pandas as pd
+
+import plotly
+import plotly.graph_objs as go
+
+
 configuration = airflow_client.client.Configuration(
     host="http://localhost:8080/api/v1",
     username='airflow',
@@ -42,7 +49,58 @@ class Job(db.Model):
 class MFIdMapping(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     query_str = db.Column(db.String(50))
-    mf_ids = db.Column(db.String, nullable=False)  
+    mf_ids = db.Column(db.String, nullable=False)
+  
+    
+
+def create_plot(dataframes):
+    """
+    Create a multiple line graph using Plotly.
+
+    Parameters:
+    - dataframes: A list of pandas DataFrames, each containing "date" and "price" columns.
+
+    Returns:
+    - A JSON representation of the Plotly graph.
+    """
+    data = []
+
+    for name, df in dataframes:
+        # Sort DataFrame by 'date' column
+        df = df.sort_values(by='date')
+
+        trace = go.Scatter(
+            x=df['date'],
+            y=df['nav'],
+            mode='lines',
+            name=f"MFID-{name}"  # Assign a unique name to each line
+        )
+
+        data.append(trace)
+
+    layout = go.Layout(
+        title='Dashboard for Fund Group - Healthcare',
+        xaxis=dict(title='Date'),
+        yaxis=dict(title='Price')
+    )
+
+    fig = go.Figure(data=data, layout=layout)
+    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
+    return graphJSON
+
+def read_parquet_files_from_s3(folder_path):
+    
+    s3_path = f"s3://iambucketnew/sparkoutputnew/mf_data/{folder_path}"
+
+    # Use pyarrow to read parquet files
+    try:
+        df = pd.read_parquet(s3_path, engine='pyarrow')
+        return df
+    except Exception as e:
+        print(f"Error reading parquet files from S3: {e}")
+        return None
+
 
 @app.route('/')
 def landing_page():
@@ -51,6 +109,31 @@ def landing_page():
     except:
         jobs=[]
     return render_template('index.html', jobs=jobs)
+
+@app.route('/dashboard')
+def dashboard():
+    
+    fund_group = "healthcare"
+    results = MFIdMapping.query.filter(MFIdMapping.query_str == fund_group).with_entities(MFIdMapping.mf_ids)
+    
+    fund_dataframes = []
+    # print([row.mf_ids for row in results])
+    i=0
+    for row in results:
+        i+=1
+        if i==5:
+            break
+        fund_id = row.mf_ids
+        fund_df = read_parquet_files_from_s3(fund_id)
+        fund_df['date'] = pd.to_datetime(fund_df['date'])
+        fund_df['nav'] = fund_df['nav'].astype(float)
+        fund_df = fund_df[fund_df['date'].dt.strftime('%Y')>'2022']
+        fund_dataframes.append([fund_id, fund_df])
+        print(fund_df.head())
+    
+    lines = create_plot(fund_dataframes)
+    jobs = db.session.query(MFIdMapping).distinct(MFIdMapping.query_str).group_by(MFIdMapping.query_str)    
+    return render_template('dashboard.html', jobs=jobs, plot=lines)
 
 
 @app.route('/search', methods=['GET'])
@@ -123,7 +206,7 @@ def check_job_status():
         db.session.commit()
         
         if job.status == "success":
-            print(job.dag_id.split("_")[0], job.dag_id)
+            print(job.dag_id.split("_")[0], job.dag_id, job.query_str)
             new_mapping = MFIdMapping(query_str=job.query_str, mf_ids=job.dag_id.split("_")[0])
             print(MFIdMapping.query.all())
             db.session.add(new_mapping)  
@@ -133,7 +216,7 @@ def check_job_status():
 
 @app.route('/delete_jobs')
 def delete_jobs():
-    Job.query.delete()
+    MFIdMapping.query.delete()
     # Commit the changes to the database
     db.session.commit()
     return render_template('index.html')
