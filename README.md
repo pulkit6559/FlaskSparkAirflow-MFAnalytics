@@ -1,32 +1,51 @@
-# spark-airflow-docker-etl
+# FlaskSparkAirflow-MFAnalytics
 
-In this repository, I have designed an ETL process that 
-1. Extract data from an API
-2. Transforms the data using Spark 
-3. Loading this data into an AWS S3 bucket. We running this batch processes using Airflow by Spark job submit Operator in Airflow. 
+An application that facilitates monitoring Mutual Fund movement trends. API data is provided by [Indian Mutual Fund API](https://www.mfapi.in/). The focus of this repository is managing and scheduling Airflow DAG's which run ETL data pipelins through Spark jobs in a containerized environment. 
+The processed data files are stored in Amazon S3 which are used by a Flask webserver to plot and monitor tends using Plotly.
 
-API data is provided by [Indian Mutual Fund API](https://www.mfapi.in/), you can read more about the API online to learn more about it. The focus of this repository is running and scheduling Airflow DAG's which runs Spark jobs in a containerized environment. 
+The following core functionalities are implemeted:
+1. Creating a Docker containerized enviroment which runs Airflow (webserver, worker, scheduler) and Spark cluster (master and worker nodes)
+2. Built custom docker images for Airflow and Spark to facilitate interaction of the containers.
+3. PySpark scripts to run ETL operations via spark jobs on requested mutual funds data.
+4. Airflow DAG script to schedule and manage PySpark scripts.
+5. Saving the processed data into an AWS S3 bucket as `.parquet` files for efficient access. 
+6. Flask webserver which allows the user to **_thematically group Mutual funds_**, initiate data extraction, and plot the data on a dashboard.
 
 
-## Things to do;
+![Alt text](tmp/images/Architecture.PNG?raw=true "Project Architecture")
+
+## Project Overview
+
+### 1. Thematically extract Mutual Funds
+For example, Mutual Funds grouped to the theme `"technology"` are shown in the Figure
+
+![Alt text](tmp/images/mf-dashboard.PNG?raw=true "Flask dashboard")
+
+### 2. Submit job that starts the extraction of the selected mutual funds 
+For each mutual fund in the group, a new DAG is initiated in Airflow. The DAG requires the `SchemeCode` as an input which is provided through the airflow-client API.
+![Alt text](tmp/images/Flaskjobs.PNG?raw=true "Flask dashboard")
+
+### 3. Plot the Mutual funds grouped by respective themes in a Plotly graph
+![Alt text](tmp/images/mf-plot.PNG?raw=true "Flask dashboard")
+
+<!-- ## Things to do;
 
 *  Set up Apache Spark locally. 
 *  Set up Apache Airflow on locally.
 *  Write the Spark Jobs to Extract, Transform and Load the data. 
-*  Design the Airflow DAG to trigger and schedule the Spark jobs.
+*  Design the Airflow DAG to trigger and schedule the Spark jobs. -->
 
 ### How to Run
 
-```mkdir -p ./dags ./logs ./plugins```
-
-1. Run `docker-compose up --build` in the project directory
-
+0. ```mkdir -p ./dags ./logs ./plugins```
     ```
     # Before starting the containers, setup AWS credentials in docker-compose.yml
         AWS_ACCESS_KEY_ID: <>
         AWS_SECRET_ACCESS_KEY: <>
         AWS_DEFAULT_REGION: <>
     ```
+
+1. Run `docker-compose up --build` in the project directory
 2. Access the Airflow web UI at `http://localhost:8080`
 3. Use the provided Airflow credentials to log in (`airflow:airflow`)
 4. Explore and manage your DAGs (Directed Acyclic Graphs) in the Airflow web UI
@@ -36,11 +55,10 @@ API data is provided by [Indian Mutual Fund API](https://www.mfapi.in/), you can
 Access the Airflow web UI at `http://localhost:8080`
 
 
-## Project Overview
-
-This Docker Compose file orchestrates a multi-container environment for running Apache Airflow with Spark. The project involves several services, including Apache Airflow components, a PostgreSQL database, a Redis message broker, and Apache Spark components.
 
 ### Containers and Dependencies
+
+This Docker Compose file orchestrates a multi-container environment for running Apache Airflow with Spark. The project involves several services, including Apache Airflow components, a PostgreSQL database, a Redis message broker, and Apache Spark components.
 
 1. **PostgreSQL Container (`postgres`):**
    - Image: `postgres:13`
