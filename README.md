@@ -9,10 +9,11 @@ The following core functionalities are implemeted:
 3. PySpark scripts to run ETL operations via spark jobs on requested mutual funds data.
 4. Airflow DAG script to schedule and manage PySpark scripts.
 5. Saving the processed data into an AWS S3 bucket as `.parquet` files for efficient access. 
-6. Flask webserver which allows the user to **_thematically group Mutual funds_**, initiate data extraction, and plot the data on a dashboard.
+6. Testing the ETL script with unittests.
+7. Flask webserver which allows the user to **_thematically group Mutual funds_**, initiate data extraction, and plot the data on a dashboard.
 
 
-![Alt text](tmp/images/Architecture.PNG?raw=true "Project Architecture")
+![Alt text](tmp/images/Architecture.png?raw=true "Project Architecture")
 
 ## Project Overview
 
@@ -26,14 +27,9 @@ For each mutual fund in the group, a new DAG is initiated in Airflow. The DAG re
 ![Alt text](tmp/images/Flaskjobs.PNG?raw=true "Flask dashboard")
 
 ### 3. Plot the Mutual funds grouped by respective themes in a Plotly graph
-![Alt text](tmp/images/mf-plot.PNG?raw=true "Flask dashboard")
+![Alt text](tmp/images/MF-plot.PNG?raw=true "Flask dashboard")
 
-<!-- ## Things to do;
 
-*  Set up Apache Spark locally. 
-*  Set up Apache Airflow on locally.
-*  Write the Spark Jobs to Extract, Transform and Load the data. 
-*  Design the Airflow DAG to trigger and schedule the Spark jobs. -->
 
 ### How to Run
 
@@ -50,10 +46,12 @@ For each mutual fund in the group, a new DAG is initiated in Airflow. The DAG re
 3. Use the provided Airflow credentials to log in (`airflow:airflow`)
 4. Explore and manage your DAGs (Directed Acyclic Graphs) in the Airflow web UI
 5. Monitor Spark jobs using the Spark web UI at `http://localhost:8000`
-
-#### Starting the DAG manually
-Access the Airflow web UI at `http://localhost:8080`
-
+6. Run Flask webserver
+   ``` 
+   pip install -r requirements.txt
+   cd dashboard 
+   python app.py
+   ```
 
 
 ### Containers and Dependencies
